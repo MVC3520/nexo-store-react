@@ -11,7 +11,7 @@ service cloud.firestore {
 
       // Solo el administrador autorizado puede modificar productos.
       allow create, update, delete: if request.auth != null
-        && request.auth.uid == "REEMPLAZAR_POR_UID_ADMIN";
+        && request.auth.uid == "mOairGOBxdNpZrSYnYKQdumHbF12";
     }
 
     // Denegar cualquier otro acceso.
