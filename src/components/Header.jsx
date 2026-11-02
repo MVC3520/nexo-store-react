@@ -1,24 +1,60 @@
-import { Link, useLocation } from "react-router-dom";
-import CartWidget from "./CartWidget";
+
+import { NavLink } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+
 export default function Header() {
-  const { pathname } = useLocation();
+  const { count } = useCart();
+  const { user, logout } = useAuth();
+
+  // UID del administrador configurado en .env
+  const adminUid = import.meta.env.VITE_ADMIN_UID;
+
+  // Solo la cuenta autorizada puede ver Administrar
+  const isAdmin = Boolean(
+    user && adminUid && user.uid === adminUid
+  );
+
   return (
-    <header>
-      <div className="container navwrap">
-        <Link to="/" className="brand">
-          <i>N</i>NEXO<span>STORE</span>
-        </Link>
+    <header className="header">
+      <div className="container nav-wrap">
+        <NavLink className="brand" to="/">
+          NEXO<span>STORE</span>
+        </NavLink>
+
         <nav>
-          <Link className={pathname === "/" ? "active" : ""} to="/">
-            Inicio
-          </Link>
-          <Link
-            className={pathname.startsWith("/producto") ? "active" : ""}
-            to="/productos"
-          >
+          <NavLink to="/">Inicio</NavLink>
+
+          <NavLink to="/productos">
             Productos
-          </Link>
-          <CartWidget />
+          </NavLink>
+
+          <NavLink to="/carrito">
+            🛒 Carrito{' '}
+            <b className="badge-count">{count}</b>
+          </NavLink>
+
+          {user ? (
+            <>
+              {isAdmin && (
+                <NavLink to="/admin">
+                  Administrar
+                </NavLink>
+              )}
+
+              <button
+                type="button"
+                className="nav-button"
+                onClick={logout}
+              >
+                Salir
+              </button>
+            </>
+          ) : (
+            <NavLink to="/login">
+              Ingresar
+            </NavLink>
+          )}
         </nav>
       </div>
     </header>

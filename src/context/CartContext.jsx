@@ -1,36 +1,20 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from 'react';
+
 const CartContext = createContext();
-export function CartProvider({ children }) {
-  const [cart, setCart] = useState([]);
-  const addToCart = (producto, cantidad = 1) => {
-    const q = Math.max(1, Number(cantidad) || 1);
-    setCart((prev) => {
-      const e = prev.find((i) => i.id === producto.id);
-      return e
-        ? prev.map((i) =>
-            i.id === producto.id ? { ...i, quantity: i.quantity + q } : i,
-          )
-        : [...prev, { ...producto, quantity: q }];
-    });
-  };
-  const removeFromCart = (id) => setCart((p) => p.filter((i) => i.id !== id));
-  const clearCart = () => setCart([]);
-  const getCartQuantity = () => cart.reduce((t, i) => t + i.quantity, 0);
-  const getCartTotal = () =>
-    cart.reduce((t, i) => t + i.precio * i.quantity, 0);
-  return (
-    <CartContext.Provider
-      value={{
-        cart,
-        addToCart,
-        removeFromCart,
-        clearCart,
-        getCartQuantity,
-        getCartTotal,
-      }}
-    >
-      {children}
-    </CartContext.Provider>
-  );
-}
 export const useCart = () => useContext(CartContext);
+
+export function CartProvider({ children }) {
+  const [cart, setCart] = useState(() => JSON.parse(localStorage.getItem('nexo-cart') || '[]'));
+  const [notice, setNotice] = useState('');
+  useEffect(() => localStorage.setItem('nexo-cart', JSON.stringify(cart)), [cart]);
+  useEffect(() => { if (!notice) return; const t = setTimeout(() => setNotice(''), 2200); return () => clearTimeout(t); }, [notice]);
+
+  const addItem = (product, qty = 1) => { setCart(prev => { const found = prev.find(i => i.id === product.id); return found ? prev.map(i => i.id === product.id ? { ...i, qty: i.qty + qty } : i) : [...prev, { ...product, qty }]; }); setNotice(`${product.nombre} agregado al carrito`); };
+  const removeItem = id => setCart(prev => prev.filter(i => i.id !== id));
+  const changeQty = (id, qty) => setCart(prev => prev.map(i => i.id === id ? { ...i, qty: Math.max(1, qty) } : i));
+  const clearCart = () => setCart([]);
+  const count = cart.reduce((a, i) => a + i.qty, 0);
+  const total = cart.reduce((a, i) => a + i.precio * i.qty, 0);
+  const value = useMemo(() => ({ cart, addItem, removeItem, changeQty, clearCart, count, total, notice }), [cart, count, total, notice]);
+  return <CartContext.Provider value={value}>{children}</CartContext.Provider>;
+}

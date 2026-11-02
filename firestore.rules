@@ -1,0 +1,22 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /productos/{productId} {
+
+      // Cualquier visitante puede consultar el catálogo.
+      allow read: if true;
+
+      // Solo el administrador autorizado puede modificar productos.
+      allow create, update, delete: if request.auth != null
+        && request.auth.uid == "REEMPLAZAR_POR_UID_ADMIN";
+    }
+
+    // Denegar cualquier otro acceso.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

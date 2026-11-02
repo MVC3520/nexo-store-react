@@ -1,27 +1,33 @@
-import { Link } from "react-router-dom";
-const money = (v) =>
-  new Intl.NumberFormat("es-AR", {
-    style: "currency",
-    currency: "ARS",
-    maximumFractionDigits: 0,
-  }).format(v);
-export default function Item({ producto }) {
+import { Link } from 'react-router-dom';
+import { useCart } from '../context/CartContext';
+
+export default function Item({ producto: p }) {
+  const { addItem } = useCart();
+
   return (
-    <article className="card">
-      <div className="pic">
-        <img src={producto.imagen} alt={producto.nombre} />
-        <span>{producto.badge}</span>
+    <article className="product-card catalog-card">
+      <div className="product-img catalog-img">
+        <img src={p.imagen} alt={p.nombre} />
+        <span className="badge">{p.badge || 'Destacado'}</span>
       </div>
-      <div className="body">
-        <small>
-          {producto.categoria} · ★ {producto.rating}
-        </small>
-        <h3>{producto.nombre}</h3>
-        <p>{producto.descripcion}</p>
-        <div className="bottom">
-          <b>{money(producto.precio)}</b>
-          <Link to={`/producto/${producto.id}`}>Ver detalle →</Link>
+
+      <div className="product-body catalog-body">
+        <div className="product-meta">
+          <span>{p.categoria}</span>
+          <span className="rating">★ {p.rating}</span>
         </div>
+
+        <h3>{p.nombre}</h3>
+        <p>{p.descripcion}</p>
+
+        <div className="product-bottom">
+          <strong>${Number(p.precio).toLocaleString('es-AR')}</strong>
+          <Link to={`/producto/${p.id}`}>Ver detalle →</Link>
+        </div>
+
+        <button className="btn primary wide catalog-add" onClick={() => addItem(p)}>
+          Agregar al carrito
+        </button>
       </div>
     </article>
   );
